@@ -1,0 +1,12 @@
+[Unit]
+Description=Sync Immich Service
+
+[Service]
+ExecStart=/home/syncthing/sync-immich/run.py
+Restart=on-failure
+RestartSec=60
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
