@@ -15,25 +15,28 @@ sy = SyncthingAPI(SETTINGS['SYNCTHING_API_URL'], SETTINGS['SYNCTHING_API_KEY'])
 
 SYNCTHING_IDENT = SETTINGS['SYNCTHING_IDENT']
 
+def log(s):
+    print(s, flush=True)
+
 def remove_from_immich(path):
     file_name = os.path.splitext(path)[0]
     im_asset = im.search_asset(file_name)
     if im_asset:
         if len(im_asset) > 1:
-            print(f"Error, multiple matches for {file_name}")
+            log(f"Error, multiple matches for {file_name}")
             return False
 
         resp = im.delete_asset([im_asset[0]['id']])
 
         if len(resp) > 1 or resp[0]['status'] != "SUCCESS":
-            print("Error, incorrect delete:")
-            print(resp)
+            log("Error, incorrect delete:")
+            log(resp)
             return False
     else:
-        print(f"Asset {path} not found in Immich")
+        log(f"Asset {path} not found in Immich")
         return False
 
-    print(f"Remove asset {resp[0]['id']} from Immich (search: {path})")
+    log(f"Remove asset {resp[0]['id']} from Immich (search: {path})")
     return True
 
 last_seen_id = None
