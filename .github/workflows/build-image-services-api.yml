@@ -7,8 +7,9 @@ on:
     branches: ['master']
 
 env:
+  SERVICE_NAME: api
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-services-api
+  IMAGE_NAME: ${{ github.repository }}-services-${{ env.SERVICE_NAME }}
 
 jobs:
   build-and-push-image:
@@ -39,8 +40,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: services/api
-          file: services/api/Dockerfile
+          context: services/${{ env.SERVICE_NAME }}
+          file: services/${{ env.SERVICE_NAME }}/Dockerfile
           push: true
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
