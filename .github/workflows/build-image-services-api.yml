@@ -9,7 +9,7 @@ on:
 env:
   SERVICE_NAME: api
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-services-${{ env.SERVICE_NAME }}
+  IMAGE_NAME: ${{ github.repository }}-services-api
 
 jobs:
   build-and-push-image:
