@@ -23,3 +23,7 @@ Add this to `docker-compose.yml` launch the service, it will read it's configura
       - .env
     restart: always
 ```
+
+### Syncthing
+
+
