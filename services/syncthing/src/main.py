@@ -1,99 +1,123 @@
 import time
+import os
+import sys
+from datetime import datetime
+import hashlib
+import requests
 
-#from fastapi import BackgroundTasks, FastAPI
-#from fastapi.responses import RedirectResponse
+from syncthing import SyncthingAPI
+from immich import ImmichAPI
 
-from syncthing.api import SyncthingAPI
-from syncthing.config import SyncthingConfig
+# Specified in docker-compose.yml
+IMMICH_EMAIL = os.getenv("IMMICH_EMAIL")
+IMMICH_PASSWORD = os.getenv("IMMICH_PASSWORD")
+SYNCTHING_REST_URL = os.getenv("SYNCTHING_REST_URL")
+SYNCTHING_API_KEY = os.getenv("SYNCTHING_API_KEY")
+SYNCTHING_LOCAL_DIR = os.getenv("SYNCTHING_LOCAL_DIR")
+SYNCTHING_FOLDER_ID = os.getenv("SYNCTHING_FOLDER_ID")
+IMMICH_TOOLS_API = os.getenv("IMMICH_TOOLS_API")
 
-time.sleep(5)
+# Read from .env
+IMMICH_SERVER_URL = os.getenv("IMMICH_SERVER_URL")
 
-sc = SyncthingConfig("/var/syncthing/config/config.xml")
-api = SyncthingAPI("http://127.0.0.1:8384/rest", sc.apikey())
+def parse_nanodate(s):
+    s = s.split(".")[0]
+    return datetime.strptime(f"{s}", "%Y-%m-%dT%H:%M:%S")
 
-#app = FastAPI(
-#    title="Immich Tools Syncthing",
-#    description="""
-#        TODO
-#    """.strip(),
-#    version="0.1.0"
-#)
+sy = SyncthingAPI(SYNCTHING_REST_URL, SYNCTHING_API_KEY)
+sy_folders = [ x['id'] for x in sy.fetch_config()['folders'] ]
 
-#@app.get("/", include_in_schema=False)
-#def redirect_to_docs():
-#    response = RedirectResponse(url='/docs')
-#    return response
+if SYNCTHING_FOLDER_ID in sy_folders:
+    print(f"SYNCTHING: Found local folder folder {SYNCTHING_LOCAL_DIR}")
+else:
+    print(f"SYNCTHING: Local directory {SYNCTHING_FOLDER_ID} not found in {sy_folders}")
+    sys.exit(1)
 
-api.config['gui']['user'] = "foo"
-api.config['gui']['password'] = "bar"
+if os.path.exists(SYNCTHING_LOCAL_DIR):
+    print(f"SYNCTHING: Local path to files {SYNCTHING_LOCAL_DIR}")
+else:
+    print(f"SYNCTHING: Local path {SYNCTHING_LOCAL_DIR} not found")
+    sys.exit(1)
 
-api.config['options']['urAccepted'] = -1
-api.config['options']['urSeen'] = 3
+im = ImmichAPI(f"{IMMICH_SERVER_URL}/api")
+im.login(IMMICH_EMAIL, IMMICH_PASSWORD)
+user_info = im.get_my_user_info()
+print(f"IMMICH:    Logged in as {user_info['email']}")
 
-api.config['folders'] = [
-    {
-        'id': 'default',
-        'label': 'A paused folder',
-        'filesystemType': 'basic',
-        'path': '/var/syncthing/Sync',
-        'type': 'sendreceive',
-        'devices': [],
-        'rescanIntervalS': 3600,
-        'fsWatcherEnabled': True,
-        'fsWatcherDelayS': 10,
-        'ignorePerms': False,
-        'autoNormalize': True,
-        'minDiskFree': {
-            'value': 1,
-            'unit': '%'
-        },
-        'versioning': {
-            'type': '',
-            'params': {},
-            'cleanupIntervalS': 3600,
-            'fsPath': '',
-            'fsType': 'basic'
-        },
-        'copiers': 0,
-        'pullerMaxPendingKiB': 0,
-        'hashers': 0,
-        'order': 'random',
-        'ignoreDelete': False,
-        'scanProgressIntervalS': 0,
-        'pullerPauseS': 0,
-        'maxConflicts': 10,
-        'disableSparseFiles': False,
-        'disableTempIndexes': False,
-        'paused': True,
-        'weakHashThresholdPct': 25,
-        'markerName': '.stfolder',
-        'copyOwnershipFromParent': False,
-        'modTimeWindowS': 0,
-        'maxConcurrentWrites': 2,
-        'disableFsync': False,
-        'blockPullOrder': 'standard',
-        'copyRangeMethod': 'standard',
-        'caseSensitiveFS': False,
-        'junctionsAsDirs': False,
-        'syncOwnership': False,
-        'sendOwnership': False,
-        'syncXattrs': False,
-        'sendXattrs': False,
-        'xattrFilter': {
-            'entries': [],
-            'maxSingleEntrySize': 1024,
-            'maxTotalSize': 4096
-        }
-    }
-]
+print("SYNCTHING: Listen for events from Syncthing")
 
-api.push_config()
 
-time.sleep(2)
+def hash_file(path):
+    file_hash = hashlib.sha1()
+    with open(path, 'rb') as f:
+        fb = f.read(2048)
+        while len(fb) > 0:
+            file_hash.update(fb)
+            fb = f.read(2048)
+    return file_hash.hexdigest()
 
+
+def tick(event):
+
+    # Only listen on events from SYNCTHING_FOLDER_ID
+    if event['data']['folder'] == SYNCTHING_FOLDER_ID:
+
+        event_ts = parse_nanodate(event['time']).timestamp()
+        action = event['data']['action']
+        modby = event['data']['modifiedBy']
+        file = event['data']['path']
+
+        # Only process events in the future
+        if event_ts < program_start_ts:
+            return
+
+        # Ignore non-files (like directories)
+        if event['data']['type'] != "file":
+            return
+
+        # Ignore hidden images (for example trashed files)
+        if file[0] == ".":
+            return
+
+        # Example: image created and/or deleted on the phone
+        if event['type'] == "RemoteChangeDetected":
+
+            if action == "deleted":
+                local_path = f"{SYNCTHING_LOCAL_DIR}/.stversions/{file}"
+            else:
+                local_path = f"{SYNCTHING_LOCAL_DIR}/{file}"
+
+            if not os.path.exists(local_path):
+                print("file not exists", local_path)
+                return
+
+            hash = hash_file(local_path)
+            r = requests.get(f"{IMMICH_TOOLS_API}/asset/checksum/{hash}")
+            asset_id = r.json()['assets'].get("id")
+
+            if action == "deleted" and asset_id:
+                immich_image = im.get_asset_by_id(asset_id)
+
+                # Make sure that this is an image that we owns
+                if immich_image['ownerId'] != im.get_my_user_info()['id']:
+                    print("Error, image now owned by expected person")
+                    return
+
+                im.delete_assets([asset_id])
+
+            else:
+                print("Modified: Not implemented")
+
+            print(f"Event: The file {file} ({hash}) was {action} by {modby}")
+
+        # Example: image deleted locally
+        elif event['type'] == "LocalChangeDetected":
+            print("local file change: not implemented")
+
+program_start_ts = datetime.utcnow().timestamp()
 last_seen_id = None
 while True:
-    for event in api.get_events_disk(since=last_seen_id):
-        print(event)
-        last_seen_id = event.get("id")
-        time.sleep(2)
+    for event in sy.get_events_disk(since=last_seen_id):
+        tick(event)
+    last_seen_id = event.get("id")
+    time.sleep(2)

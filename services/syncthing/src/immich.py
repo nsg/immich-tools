@@ -57,12 +57,20 @@ class ImmichAPI:
         url = f"{self.server_api}/user?isAll={q}"
         return self.request_get(url)
 
+    def get_my_user_info(self):
+        url = f"{self.server_api}/user/me"
+        return self.request_get(url)
+
+    def get_asset_by_id(self, asset_id):
+        url = f"{self.server_api}/asset/assetById/{asset_id}"
+        return self.request_get(url)
+
     def search_asset(self, term):
         q = { "searchTerm": term }
         url = f"{self.server_api}/asset/search"
         return self.request_post(url, q)
 
-    def delete_asset(self, asset_ids):
+    def delete_assets(self, asset_ids):
         q = { "ids": asset_ids }
         url = f"{self.server_api}/asset"
         return self.request_delete(url, q)
