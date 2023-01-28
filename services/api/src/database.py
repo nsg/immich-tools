@@ -31,6 +31,21 @@ class ImmichDatabase:
         cursor.close()
         return r
 
+
+    def get_externalfile_by_checksum(self, checksum):
+        cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute("SELECT * FROM hasher_scanned_files WHERE checksum = %s", (checksum,))
+        r = []
+        for asset in cursor:
+            r.append({
+                "id": asset['id'],
+                "path": asset['asset_path'],
+                "changed": asset['changed_on'],
+            })
+        cursor.close()
+        return { "assets": r, "count": len(r) }
+
+
     def get_asset_checksum(self, checksum):
         checksum = f"\\x{checksum}"
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
