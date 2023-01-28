@@ -73,3 +73,5 @@ This service recursively scans a specified folder and maintains a lookup table f
 ```
 
 **Warning** this service will alter the database. A table called `hasher_scanned_files` will be created.
+
+For a full import of all data place a file called `.scan-all` in `SCAN_PATH` at wait for the next `SCAN_INTERVAL`. Remove the file to only import new files.
