@@ -14,7 +14,7 @@ PORT = os.getenv("DB_PORT", 5432)
 
 SCAN_PATH = os.getenv("SCAN_PATH", "/scan")
 SCAN_INTERVAL = int(os.getenv("SCAN_INTERVAL", "1"))
-SCAN_FILEAGE = int(os.getenv("SCAN_FILEAGE", "3"))
+SCAN_FILEAGE = int(os.getenv("SCAN_FILEAGE", SCAN_INTERVAL * 2))
 
 if os.path.exists(SCAN_PATH):
     print(f"Scan folder is: {SCAN_PATH}")
@@ -47,7 +47,6 @@ while True:
                 print(hash, file, mtime, flush=True)
                 clean_up = db.get_old_hashes(file, hash)
                 for id in clean_up:
-                    print("Remove ID ", id)
                     db.delete_asset_by_id(id)
 
 

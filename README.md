@@ -53,3 +53,18 @@ This connects to a Syncthing server and listens for file changes in a specified 
 ```
 
 You need to have File Versioning turned on, set it to `Trash Can File Versioning`. To save some disk space, I recommend that you change `Clean out after` to a few days. This script assumes we use `.stversions`.
+
+### Hasher
+
+```
+  immich-tools-services-api:
+    image: ghcr.io/nsg/immich-tools-services-api:master
+    env_file:
+      - .env
+    environment:
+      SCAN_PATH: /scan
+      SCAN_INTERVAL: 60
+    volumes:
+      /mnt/files:/scan
+    restart: always
+```
