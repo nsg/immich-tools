@@ -48,7 +48,7 @@ This connects to a Syncthing server and listens for file changes in a specified 
     env_file:
       - .env
     volumes:
-      /mnt/syncthing:/syncthing
+      - /mnt/syncthing:/syncthing
     restart: always
 ```
 
@@ -67,7 +67,7 @@ This service recursively scans a specified folder and maintains a lookup table f
       SCAN_PATH: /scan
       SCAN_INTERVAL: 60
     volumes:
-      /mnt/files:/scan
+      - /mnt/files:/scan
     restart: always
 ```
 
