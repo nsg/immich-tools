@@ -26,7 +26,7 @@ Add this to `docker-compose.yml` launch the service, it will read it's configura
 
 * `/users` - List User UUID:s
 * `/asset/checksum/{checksum}` - Find asset by checksum, list Asset UUID
-* `/asset/deleted` - List checksums of deleted files
+* `/asset/deleted/{minutes}` - List checksums of deleted files in the last {minutes}
 
 **Warning** this service will alter the database. A table called `assets_delete_audits` will be created, together with a function called `log_assets_delete_audits()` and a trigger called `trigger_assets_delete_audits`.
 

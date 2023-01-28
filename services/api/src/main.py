@@ -33,6 +33,6 @@ def get_asset_checksum(checksum: str):
         return db.get_asset_checksum(checksum)
     return { "assets": [], "count": 0 }
 
-@app.get("/asset/deleted")
-def get_asset_deleted():
-    return db.list_deleted_assets_last_n_minutes(5)
+@app.get("/asset/deleted/{minutes}")
+def get_asset_deleted(minutes: int):
+    return db.list_deleted_assets_last_n_minutes(minutes)
