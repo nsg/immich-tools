@@ -35,12 +35,16 @@ def hash_file(path):
     return file_hash.hexdigest()
 
 while True:
+    if os.path.isfile(f"{SCAN_PATH}/.scan-all"):
+        now = 0.0
+        print(f".scan-all file found in {SCAN_PATH}, timestamp constraint will be ignored", flush=True)
+    else:
+        now = time.time()
 
     files = glob.glob(SCAN_PATH + '/**/*', recursive=True)
     for file in files:
         if os.path.isfile(file):
             mtime = os.path.getmtime(file)
-            now = time.time()
             if mtime > now - SCAN_FILEAGE:
                 hash = hash_file(file)
                 db.set_asset_checksum(file, hash)
