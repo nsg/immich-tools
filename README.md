@@ -56,6 +56,8 @@ You need to have File Versioning turned on, set it to `Trash Can File Versioning
 
 ### Hasher
 
+This service recursively scans a specified folder and maintains a lookup table for `(path, sha1hash)` pairs.
+
 ```
   immich-tools-services-hasher:
     image: ghcr.io/nsg/immich-tools-services-hasher:master
@@ -68,3 +70,5 @@ You need to have File Versioning turned on, set it to `Trash Can File Versioning
       /mnt/files:/scan
     restart: always
 ```
+
+**Warning** this service will alter the database. A table called `hasher_scanned_files` will be created.
