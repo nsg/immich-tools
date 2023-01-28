@@ -57,8 +57,8 @@ You need to have File Versioning turned on, set it to `Trash Can File Versioning
 ### Hasher
 
 ```
-  immich-tools-services-api:
-    image: ghcr.io/nsg/immich-tools-services-api:master
+  immich-tools-services-hasher:
+    image: ghcr.io/nsg/immich-tools-services-hasher:master
     env_file:
       - .env
     environment:
