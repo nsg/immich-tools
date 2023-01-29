@@ -44,3 +44,5 @@ def import_path(path: str):
     ]
     subprocess.run(" ".join(command), shell=True)
     os.remove(temp_link_name)
+
+    print(f"Imported {path_import} to Immich")
