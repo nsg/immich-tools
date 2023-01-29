@@ -46,6 +46,7 @@ This connects to a Syncthing server and listens for file changes in a specified 
       IMMICH_EMAIL: user@example.com
       IMMICH_PASSWORD: myNicePassword
       IMMICH_TOOLS_API: immich-tools-services-api:8000
+      IMMICH_IMPORT_API: immich-tools-services-import:8001
     env_file:
       - .env
     volumes:

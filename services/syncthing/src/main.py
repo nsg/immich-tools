@@ -7,6 +7,7 @@ import requests
 
 from syncthing import SyncthingAPI
 from immich import ImmichAPI
+from toolsapi import ToolsApi, ImportApi
 
 # Specified in docker-compose.yml
 IMMICH_EMAIL = os.getenv("IMMICH_EMAIL")
@@ -16,6 +17,7 @@ SYNCTHING_API_KEY = os.getenv("SYNCTHING_API_KEY")
 SYNCTHING_LOCAL_DIR = os.getenv("SYNCTHING_LOCAL_DIR")
 SYNCTHING_FOLDER_ID = os.getenv("SYNCTHING_FOLDER_ID")
 IMMICH_TOOLS_API = os.getenv("IMMICH_TOOLS_API")
+IMMICH_IMPORT_API = os.getenv("IMMICH_IMPORT_API")
 
 # Read from .env
 IMMICH_SERVER_URL = os.getenv("IMMICH_SERVER_URL")
@@ -46,6 +48,8 @@ print(f"IMMICH:    Logged in as {user_info['email']}")
 
 print("SYNCTHING: Listen for events from Syncthing")
 
+to = ToolsApi(IMMICH_TOOLS_API)
+ip = ImportApi(IMMICH_IMPORT_API)
 
 def hash_file(path):
     file_hash = hashlib.sha1()
@@ -82,33 +86,46 @@ def tick(event):
         # Example: image created and/or deleted on the phone
         if event['type'] == "RemoteChangeDetected":
 
+            # Set path to the local files
             if action == "deleted":
                 local_path = f"{SYNCTHING_LOCAL_DIR}/.stversions/{file}"
             else:
                 local_path = f"{SYNCTHING_LOCAL_DIR}/{file}"
 
+            # Abort if the file do not exist
             if not os.path.exists(local_path):
                 print("file not exists", local_path)
                 return
 
             hash = hash_file(local_path)
-            r = requests.get(f"{IMMICH_TOOLS_API}/asset/checksum/{hash}")
-            asset_id = r.json()['assets'].get("id")
+            assets = to.get_assets_by_hash(hash)
 
-            if action == "deleted" and asset_id:
-                immich_image = im.get_asset_by_id(asset_id)
+            if action == "deleted":
+
+                # This should not happen, abort if we got several matches
+                if len(assets) > 1:
+                    print(f"Got {len(assets)} results for {hash}, abort!")
+                    return
+
+                # Image not found in Immich, maybe it was never there? Or
+                # maybe it was removed from Immich mobile app? There is
+                # nothing to remove.
+                if len(assets) == 0:
+                    print(f"Found no remote files for hash {hash}, nothing will be removed from Immich")
+                    return
+
+                immich_image = im.get_asset_by_id(assets[0])
 
                 # Make sure that this is an image that we owns
                 if immich_image['ownerId'] != im.get_my_user_info()['id']:
                     print("Error, image now owned by expected person")
                     return
 
-                im.delete_assets([asset_id])
+                im.delete_assets([assets[0]])
 
-            else:
-                print("Modified: Not implemented")
-
-            print(f"Event: The file {file} ({hash}) was {action} by {modby}")
+            elif action == "modified":
+                if len(assets) == 0:
+                    ip.upload_image(file)
 
         # Example: image deleted locally
         elif event['type'] == "LocalChangeDetected":

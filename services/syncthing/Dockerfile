@@ -6,4 +6,4 @@ RUN pip install -r /app/requirements.txt
 ADD src/ /app/
 
 WORKDIR /app/
-CMD ["python", "src/main.py"]
+CMD ["python", "main.py"]
