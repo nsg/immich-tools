@@ -3,19 +3,33 @@ IMAGE_PREFIX := localhost/immich-tools
 api: api-build postgres
 	podman run \
 		--net host \
-		-e DB_HOSTNAME=127.0.0.1 \
-		-e DB_USERNAME=postgres \
-		-e DB_PASSWORD=postgres \
+		--env-file .env-file \
 		${IMAGE_PREFIX}-api
 
 hasher: hasher-build postgres
 	podman run \
 		--net host \
-		-e DB_HOSTNAME=127.0.0.1 \
-		-e DB_USERNAME=postgres \
-		-e DB_PASSWORD=postgres \
+		--env-file .env-file \
 		-v ${PWD}/files:/scan \
 		${IMAGE_PREFIX}-hasher
+
+syncthing: syncthing-build camera
+	podman run \
+		--net host \
+		--env-file .env-file \
+		-v ${PWD}/camera:/sync \
+		${IMAGE_PREFIX}-syncthing
+
+import: import-build camera
+	podman run \
+		--net host \
+		--env-file .env-file \
+		-v ${PWD}/files:/import \
+		${IMAGE_PREFIX}-import
+
+.PHONY: camera
+camera:
+	test -e camera/thumbnails
 
 %-build:
 	podman build services/$* -t ${IMAGE_PREFIX}-$*
