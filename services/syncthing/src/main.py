@@ -41,7 +41,7 @@ else:
     print(f"SYNCTHING: Local path {SYNCTHING_LOCAL_DIR} not found")
     sys.exit(1)
 
-im = ImmichAPI(f"{IMMICH_SERVER_URL}/api")
+im = ImmichAPI(f"{IMMICH_SERVER_URL}")
 im.login(IMMICH_EMAIL, IMMICH_PASSWORD)
 user_info = im.get_my_user_info()
 print(f"IMMICH:    Logged in as {user_info['email']}")
