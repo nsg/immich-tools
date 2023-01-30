@@ -19,4 +19,4 @@ class ImportApi:
         self.immich_import_api = immich_import_api
 
     def upload_image(self, path):
-        print(f"import /import/{path}")
+        print(f"import /import/{path}", flush=True)

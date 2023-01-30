@@ -30,23 +30,23 @@ sy = SyncthingAPI(SYNCTHING_REST_URL, SYNCTHING_API_KEY)
 sy_folders = [ x['id'] for x in sy.fetch_config()['folders'] ]
 
 if SYNCTHING_FOLDER_ID in sy_folders:
-    print(f"SYNCTHING: Found local folder folder {SYNCTHING_LOCAL_DIR}")
+    print(f"SYNCTHING: Found local folder folder {SYNCTHING_LOCAL_DIR}", flush=True)
 else:
-    print(f"SYNCTHING: Local directory {SYNCTHING_FOLDER_ID} not found in {sy_folders}")
+    print(f"SYNCTHING: Local directory {SYNCTHING_FOLDER_ID} not found in {sy_folders}", flush=True)
     sys.exit(1)
 
 if os.path.exists(SYNCTHING_LOCAL_DIR):
-    print(f"SYNCTHING: Local path to files {SYNCTHING_LOCAL_DIR}")
+    print(f"SYNCTHING: Local path to files {SYNCTHING_LOCAL_DIR}", flush=True)
 else:
-    print(f"SYNCTHING: Local path {SYNCTHING_LOCAL_DIR} not found")
+    print(f"SYNCTHING: Local path {SYNCTHING_LOCAL_DIR} not found", flush=True)
     sys.exit(1)
 
 im = ImmichAPI(f"{IMMICH_SERVER_URL}")
 im.login(IMMICH_EMAIL, IMMICH_PASSWORD)
 user_info = im.get_my_user_info()
-print(f"IMMICH:    Logged in as {user_info['email']}")
+print(f"IMMICH:    Logged in as {user_info['email']}", flush=True)
 
-print("SYNCTHING: Listen for events from Syncthing")
+print("SYNCTHING: Listen for events from Syncthing", flush=True)
 
 to = ToolsApi(IMMICH_TOOLS_API)
 ip = ImportApi(IMMICH_IMPORT_API)
@@ -94,7 +94,7 @@ def tick(event):
 
             # Abort if the file do not exist
             if not os.path.exists(local_path):
-                print("file not exists", local_path)
+                print("file not exists", local_path, flush=True)
                 return
 
             hash = hash_file(local_path)
@@ -104,21 +104,21 @@ def tick(event):
 
                 # This should not happen, abort if we got several matches
                 if len(assets) > 1:
-                    print(f"Got {len(assets)} results for {hash}, abort!")
+                    print(f"Got {len(assets)} results for {hash}, abort!", flush=True)
                     return
 
                 # Image not found in Immich, maybe it was never there? Or
                 # maybe it was removed from Immich mobile app? There is
                 # nothing to remove.
                 if len(assets) == 0:
-                    print(f"Found no remote files for hash {hash}, nothing will be removed from Immich")
+                    print(f"Found no remote files for hash {hash}, nothing will be removed from Immich", flush=True)
                     return
 
                 immich_image = im.get_asset_by_id(assets[0])
 
                 # Make sure that this is an image that we owns
                 if immich_image['ownerId'] != im.get_my_user_info()['id']:
-                    print("Error, image now owned by expected person")
+                    print("Error, image now owned by expected person", flush=True)
                     return
 
                 im.delete_assets([assets[0]])
@@ -129,7 +129,7 @@ def tick(event):
 
         # Example: image deleted locally
         elif event['type'] == "LocalChangeDetected":
-            print("local file change: not implemented")
+            print("local file change: not implemented", flush=True)
 
 program_start_ts = datetime.utcnow().timestamp()
 last_seen_id = None

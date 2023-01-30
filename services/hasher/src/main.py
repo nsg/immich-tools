@@ -17,9 +17,9 @@ SCAN_INTERVAL = int(os.getenv("SCAN_INTERVAL", "1"))
 SCAN_FILEAGE = int(os.getenv("SCAN_FILEAGE", SCAN_INTERVAL * 2))
 
 if os.path.exists(SCAN_PATH):
-    print(f"Scan folder is: {SCAN_PATH}")
+    print(f"Scan folder is: {SCAN_PATH}", flush=True)
 else:
-    print(f"Scan folder {SCAN_PATH} not found")
+    print(f"Scan folder {SCAN_PATH} not found", flush=True)
     sys.exit(1)
 
 db = ImmichDatabase(DATABASE, HOST, USERNAME, PASSWORD, PORT)
