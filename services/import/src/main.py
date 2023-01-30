@@ -39,7 +39,7 @@ def import_path(path: str):
         "upload",
         "--yes",
         "--key", IMMICH_KEY,
-        "--server", f"{IMMICH_SERVER_URL}/api",
+        "--server", f"{IMMICH_SERVER_URL}",
         "-d", link_import_path
     ]
     subprocess.run(" ".join(command), shell=True)
