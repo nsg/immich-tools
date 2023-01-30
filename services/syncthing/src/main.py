@@ -124,8 +124,7 @@ def tick(event):
                 im.delete_assets([assets[0]])
 
             elif action == "modified":
-                if len(assets) == 0:
-                    ip.upload_image(file)
+                ip.upload_image(file)
 
         # Example: image deleted locally
         elif event['type'] == "LocalChangeDetected":
