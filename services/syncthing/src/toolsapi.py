@@ -19,4 +19,6 @@ class ImportApi:
         self.immich_import_api = immich_import_api
 
     def upload_image(self, path):
-        print(f"import /import/{path}", flush=True)
+        r = requests.get(f"{self.immich_import_api}/import/{path}")
+        if r.status_code != 200:
+            print(f"Failed to import {path}", flush=True)
