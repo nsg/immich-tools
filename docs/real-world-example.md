@@ -73,7 +73,7 @@ You need to deploy one instance of hasher for each folder. It's important that `
     restart: always    
 ```
 
-You need one import service for each user
+You need one import service for each folder
 
 ```yaml
   immich-tools-services-import-phone-a:
