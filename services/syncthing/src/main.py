@@ -3,7 +3,6 @@ import os
 import sys
 from datetime import datetime
 import hashlib
-import sched
 
 from syncthing import SyncthingAPI
 from immich import ImmichAPI
@@ -136,16 +135,18 @@ def process_assets_delete_audits():
         print(remove_local, flush=True)
         remove_file = to.get_local_by_hash(remove_local["checksum"])
         print(remove_file, flush=True)
-    SCHEDULER.enter(2, 1, process_assets_delete_audits)
-
-SCHEDULER = sched.scheduler(time.time, time.sleep)
-SCHEDULER.enter(2, 1, process_assets_delete_audits)
-SCHEDULER.run()
 
 program_start_ts = datetime.utcnow().timestamp()
 last_seen_id = None
 while True:
-    for event in sy.get_events_disk(since=last_seen_id):
-        tick(event)
-    last_seen_id = event.get("id")
-    time.sleep(2)
+    sec = datetime.now().second
+
+    if sec % 10 == 0:
+        for event in sy.get_events_disk(since=last_seen_id):
+            tick(event)
+        last_seen_id = event.get("id")
+
+    if sec % 30 == 0:
+        process_assets_delete_audits()
+
+    time.sleep(1)
