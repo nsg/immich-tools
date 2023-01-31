@@ -62,7 +62,6 @@ def hash_file(path):
 
 
 def tick(event):
-    global program_start_ts
 
     # Only listen on events from SYNCTHING_FOLDER_ID
     if event['data']['folder'] == SYNCTHING_FOLDER_ID:
@@ -131,9 +130,6 @@ def tick(event):
         elif event['type'] == "LocalChangeDetected":
             print("local file change: not implemented", flush=True)
 
-program_start_ts = datetime.utcnow().timestamp()
-last_seen_id = None
-
 def process_assets_delete_audits():
     remove_locals = to.get_deleted_assets_last_n_minutes(2)
     for remove_local in remove_locals:
@@ -143,12 +139,13 @@ def process_assets_delete_audits():
     sch.enter(30, 1, process_assets_delete_audits)
 
 def process_syncthing_events():
-    global last_seen_id
-
     for event in sy.get_events_disk(since=last_seen_id):
         tick(event)
     last_seen_id = event.get("id")
     sch.enter(10, 1, process_syncthing_events)
+
+program_start_ts = datetime.utcnow().timestamp()
+last_seen_id = None
 
 sch = sched.scheduler(time.time, time.sleep)
 sch.enter(10, 1, process_syncthing_events)
