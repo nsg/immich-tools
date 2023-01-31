@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 import hashlib
-import requests
+import sched
 
 from syncthing import SyncthingAPI
 from immich import ImmichAPI
@@ -129,6 +129,18 @@ def tick(event):
         # Example: image deleted locally
         elif event['type'] == "LocalChangeDetected":
             print("local file change: not implemented", flush=True)
+
+def process_assets_delete_audits():
+    remove_locals = to.get_deleted_assets_last_n_minutes(2)
+    for remove_local in remove_locals:
+        print(remove_local, flush=True)
+        remove_file = to.get_local_by_hash(remove_local["checksum"])
+        print(remove_file, flush=True)
+    SCHEDULER.enter(2, 1, process_assets_delete_audits)
+
+SCHEDULER = sched.scheduler(time.time, time.sleep)
+SCHEDULER.enter(2, 1, process_assets_delete_audits)
+SCHEDULER.run()
 
 program_start_ts = datetime.utcnow().timestamp()
 last_seen_id = None

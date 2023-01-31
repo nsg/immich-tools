@@ -11,6 +11,14 @@ class ToolsApi:
         r = requests.get(f"{self.immich_tools_api}/asset/checksum/{hash}")
         return r.json()['assets']
 
+    def get_local_by_hash(self, hash):
+        r = requests.get(f"{self.immich_tools_api}/local/checksum/{hash}")
+        return r.json()['assets']
+
+    def get_deleted_assets_last_n_minutes(self, minutes):
+        r = requests.get(f"{self.immich_tools_api}/asset/deleted/{minutes}")
+        return r.json()
+
 class ImportApi:
 
     immich_import_api: str
