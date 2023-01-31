@@ -2,7 +2,7 @@
 
 This connects to a Syncthing server and listens for file changes in a specified folder. This service also require read only access to the files to it can enhance the events with file hashes.
 
-```
+```yaml
   immich-tools-services-syncthing:
     image: ghcr.io/nsg/immich-tools-services-syncthing:master
     environment:

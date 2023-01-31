@@ -2,7 +2,7 @@
 
 This service recursively scans a specified folder and maintains a lookup table for `(path, sha1hash)` pairs.
 
-```
+```yaml
   immich-tools-services-hasher:
     image: ghcr.io/nsg/immich-tools-services-hasher:master
     env_file:

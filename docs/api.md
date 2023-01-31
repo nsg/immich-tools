@@ -6,7 +6,7 @@ are used by the other services in Immich Tools to do various things.
 
 Add this to `docker-compose.yml` launch the service, it will read it's configuration from `.env` like Immich. This service connects directly to the database.
 
-```
+```yaml
   immich-tools-services-api:
     image: ghcr.io/nsg/immich-tools-services-api:master
     env_file:
