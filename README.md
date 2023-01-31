@@ -4,6 +4,8 @@
 
 Various tools that I use together with my [Immich](https://immich.app) installation to enhance it (from my point of view). I hope you find this useful to use as-is or as a starting point of some tweaks of your own. I'm happy to merge changes that do not alter the scope of this project to much.
 
+See [Real World Example](docs/real-world-example.md), this is a simplified (but functionally identical) version of my setup.
+
 ## Micro Services
 
 The tools are split in to different micro services. They are intended to be run as part of the Immich `docker-compose.yml` and reads it's configuration from Immich environment.
