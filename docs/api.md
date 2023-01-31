@@ -11,6 +11,8 @@ Add this to `docker-compose.yml` launch the service, it will read it's configura
     image: ghcr.io/nsg/immich-tools-services-api:master
     env_file:
       - .env
+    depends_on:
+      - database
     restart: always
 ```
 

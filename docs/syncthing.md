@@ -12,12 +12,14 @@ This connects to a Syncthing server and listens for file changes in a specified 
       SYNCTHING_LOCAL_DIR: /syncthing
       IMMICH_EMAIL: user@example.com
       IMMICH_PASSWORD: myNicePassword
-      IMMICH_TOOLS_API: immich-tools-services-api:8000
-      IMMICH_IMPORT_API: immich-tools-services-import:8001
+      IMMICH_TOOLS_API: http://immich-tools-services-api:8000
+      IMMICH_IMPORT_API: http://immich-tools-services-import:8001
     env_file:
       - .env
     volumes:
-      - /mnt/syncthing:/syncthing
+      - /phone/camera:/syncthing
+    depends_on:
+      - immich-server
     restart: always
 ```
 

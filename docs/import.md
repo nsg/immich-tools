@@ -12,8 +12,9 @@ I packages this as a separate micro service to keep it simple to maintain. This 
     environment:
       IMMICH_KEY: aImmicHtOKenGENeraTedFromWebUIforAUser
     volumes:
-      - /mnt/files:/import
+      - /phone/camera:/import
     restart: always
+
 ```
 
 API:
