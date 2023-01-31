@@ -42,7 +42,7 @@ You need one instance of the API server, this is not user specific so you never 
     restart: always
 ```
 
-You need to deploy one instance of hasher for each folder. It's important that `SCAN_PATH` is unique to this user and folder and stays the same for the other services.
+You need to deploy one instance of hasher for each folder. It's important that `SCAN_PATH` is unique to this user and folder.
 
 ```yaml
 
