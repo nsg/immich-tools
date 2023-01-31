@@ -136,18 +136,16 @@ def process_assets_delete_audits():
         print(remove_local, flush=True)
         remove_file = to.get_local_by_hash(remove_local["checksum"])
         print(remove_file, flush=True)
-    sch.enter(30, 1, process_assets_delete_audits)
+    SCHEDULER.enter(2, 1, process_assets_delete_audits)
 
-def process_syncthing_events():
-    for event in sy.get_events_disk(since=last_seen_id):
-        tick(event)
-    last_seen_id = event.get("id")
-    sch.enter(10, 1, process_syncthing_events)
+SCHEDULER = sched.scheduler(time.time, time.sleep)
+SCHEDULER.enter(2, 1, process_assets_delete_audits)
+SCHEDULER.run()
 
 program_start_ts = datetime.utcnow().timestamp()
 last_seen_id = None
-
-sch = sched.scheduler(time.time, time.sleep)
-sch.enter(10, 1, process_syncthing_events)
-sch.enter(30, 2, process_assets_delete_audits)
-sch.run()
+while True:
+    for event in sy.get_events_disk(since=last_seen_id):
+        tick(event)
+    last_seen_id = event.get("id")
+    time.sleep(2)
