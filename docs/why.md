@@ -12,7 +12,7 @@ Immich uploads the new pictures to the server and they are available everywhere.
 
 ![](immich-state-3a.png)
 
-The Image backup solution only synchronizes new images, removed images are ignored. If you consider this an backup (like Immich do) it makes sense to keep the images server side. At the same time the Immich Mobile application allows me to remove images at the server so the backup is not really a backup.
+The Immich backup solution only synchronizes new pictures, removed images are ignored. If you consider this an backup (like Immich do) it makes sense to keep the images server side. At the same time the Immich Mobile application allows me to remove images at the server so the backup is not really a backup.
 
 I'm happy to use the Immich Mobile application to browse my archive, but for local image viewing I prefer to stay flexible. I can use Immich Mobile for "the full picture" view, and the phones normal photo application to look at recently taken pictures. Immich Mobile do not support all features that I use so I prefer to use the best app for the job and not limit myself to Immich for my photo viewing.
 
