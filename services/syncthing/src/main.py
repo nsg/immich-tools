@@ -130,7 +130,7 @@ def tick(event):
             print("local file change: not implemented", flush=True)
 
 def process_assets_delete_audits():
-    remove_locals = to.get_deleted_assets_last_n_minutes(2)
+    remove_locals = to.get_last_deleted_assets()
     for remove_local in remove_locals:
         print(remove_local, flush=True)
         remove_file = to.get_local_by_hash(remove_local["checksum"])

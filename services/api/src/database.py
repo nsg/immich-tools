@@ -57,13 +57,13 @@ class ImmichDatabase:
         return { "assets": r, "count": len(r) }
 
 
-    def list_deleted_assets_last_n_minutes(self, minutes):
+    def list_last_deleted_assets(self):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute("""
             SELECT asset_id, checksum, changed_on
                 FROM assets_delete_audits
-                WHERE changed_on > (NOW() - interval '%s minutes')
-            """, (minutes,))
+                WHERE changed_on > (NOW() - interval '2 minutes')
+            """)
         r = []
         for deleted in cursor:
             row = {

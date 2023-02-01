@@ -15,8 +15,8 @@ class ToolsApi:
         r = requests.get(f"{self.immich_tools_api}/local/checksum/{hash}")
         return r.json()['assets']
 
-    def get_deleted_assets_last_n_minutes(self, minutes):
-        r = requests.get(f"{self.immich_tools_api}/asset/deleted/{minutes}")
+    def get_last_deleted_assets(self):
+        r = requests.get(f"{self.immich_tools_api}/asset/deleted/last")
         return r.json()
 
 class ImportApi:

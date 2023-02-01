@@ -39,6 +39,6 @@ def get_local_checksum(checksum: str):
         return db.get_externalfile_by_checksum(checksum)
     return { "assets": [], "count": 0 }
 
-@app.get("/asset/deleted/{minutes}")
-def get_asset_deleted(minutes: int):
-    return db.list_deleted_assets_last_n_minutes(minutes)
+@app.get("/asset/deleted/last")
+def get_asset_deleted():
+    return db.list_last_deleted_assets()
