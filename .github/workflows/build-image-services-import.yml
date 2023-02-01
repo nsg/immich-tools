@@ -5,6 +5,8 @@ name: Create and publish a Docker image for services/import
 on:
   push:
     branches: ['master']
+    paths:
+      - "services/import/**"
 
 env:
   SERVICE_NAME: import

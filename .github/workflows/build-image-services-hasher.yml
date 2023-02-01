@@ -5,6 +5,8 @@ name: Create and publish a Docker image for services/hasher
 on:
   push:
     branches: ['master']
+    paths:
+      - "services/hasher/**"
 
 env:
   SERVICE_NAME: hasher
