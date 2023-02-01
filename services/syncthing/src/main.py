@@ -132,9 +132,13 @@ def tick(event):
 def process_assets_delete_audits():
     remove_locals = to.get_last_deleted_assets()
     for remove_local in remove_locals:
-        print(remove_local, flush=True)
         remove_file = to.get_local_by_hash(remove_local["checksum"])
-        print(remove_file, flush=True)
+        remove_path = remove_file["path"]
+        if os.path.exists(remove_file):
+            print(f"File removed from Immich Server, remote {remove_file}")
+            os.remove(remove_file)
+        else:
+            print(f"File removed from Immich Server, file {remove_file} do not exists")
 
 program_start_ts = datetime.utcnow().timestamp()
 last_seen_id = None
