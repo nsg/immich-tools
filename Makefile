@@ -27,6 +27,13 @@ import: import-build camera
 		-v ${PWD}/files:/import \
 		${IMAGE_PREFIX}-import
 
+harmonize: harmonize-build camera
+	podman run \
+		--net host \
+		--env-file .env-file \
+		-v ${PWD}/camera:/sync \
+		${IMAGE_PREFIX}-harmonize
+
 .PHONY: camera
 camera:
 	test -e camera/thumbnails
