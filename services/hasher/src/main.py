@@ -14,7 +14,7 @@ PASSWORD = os.getenv("DB_PASSWORD", "postgres")
 PORT = os.getenv("DB_PORT", 5432)
 
 SCAN_PATH = os.getenv("SCAN_PATH", "/user")
-SCAN_INTERVAL = int(os.getenv("SCAN_INTERVAL", "1"))
+SCAN_INTERVAL = int(os.getenv("SCAN_INTERVAL", "60"))
 SCAN_FILEAGE = int(os.getenv("SCAN_FILEAGE", SCAN_INTERVAL * 2))
 
 if not os.path.exists(SCAN_PATH):
