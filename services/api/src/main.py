@@ -42,6 +42,6 @@ def get_local_checksum(checksum: str):
     return {"assets": [], "count": 0}
 
 
-@app.get("/asset/deleted/last")
+@app.get("/asset/deleted_audits")
 def get_asset_deleted():
     return db.list_last_deleted_assets()

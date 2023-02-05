@@ -16,9 +16,11 @@ Add this to `docker-compose.yml` launch the service, it will read it's configura
     restart: always
 ```
 
-* `/users` - List User UUID:s
-* `/asset/checksum/{checksum}` - Find asset by checksum, list Asset UUID
-* `/asset/deleted/last` - List checksums of files deleted in the last 2 minutes
-* `/local/checksum/{checksum}` - Find local asset by checksum (indexed by the hasher service)
+| Path                             | Query   | Comment          |
+| -------------------------------- | ------- | ---------------- |
+| `/users`                         |         | List User UUID:s |
+| `/asset/checksum/{checksum}`     | user_id | Find asset by checksum, optional filter by User ID |
+| `/asset/deleted_audits`          |         | List checksums of files deleted in the last 2 minutes |
+| `/local/checksum/{checksum}`     |         | Find local asset by checksum (indexed by the hasher service) |
 
 **Warning** this service will alter the database. A table called `assets_delete_audits` will be created, together with a function called `log_assets_delete_audits()` and a trigger called `trigger_assets_delete_audits`.
