@@ -14,9 +14,9 @@ The tools are split in to different micro services. They are intended to be run 
 
 Unofficial Immich API. There are a lot of data in Immich database, this is a simple REST API that exposes that information.
 
-### [Immich Tools Hasher](docs/hasher.md)
+### [Immich Tools Jumble](docs/jumble.md)
 
-Recursively scans a specified folder and maintains index over files. Immich saves file hashes in the database, I use these to uniquely identify an image by hash. These service builds a lookup table in the database to quickly lookup a file path. This is a headless service, the data is exposed via the API.
+This service provides file system operations to to local folders. At the moment it does two things, "hasher" who is service that hashes files to build a search index and "junk" a REST service to access the data and delete files.
 
 ### [Immich Tools Import](docs/import.md)
 

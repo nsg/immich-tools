@@ -1,6 +1,6 @@
 ## Jumble
 
-This service provides file system operations to to local folders. At the moment it does two things, "hasher" who is service that hashes files to build a search index for the Immich Tools API service and "junk" a REST service to access the data and delete files.
+This service provides file system operations to to local folders. At the moment it does two things, "hasher" who is service that hashes files to build a search index and "junk" a REST service to access the data and delete files.
 
 ### Hasher
 
