@@ -10,7 +10,7 @@ hasher: hasher-build postgres camera
 	podman run \
 		--net host \
 		--env-file .env-file \
-		-v camera:/user/bcdf8310-430f-48de-a4d2-0d2a1868e901
+		-v ${PWD}/camera:/user/bcdf8310-430f-48de-a4d2-0d2a1868e901 \
 		${IMAGE_PREFIX}-hasher
 
 syncthing: syncthing-build camera

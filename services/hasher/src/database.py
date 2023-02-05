@@ -9,14 +9,14 @@ class ImmichDatabase:
             database=database, host=host, user=username, password=password, port=port
         )
 
-    def get_old_hashes(self, path, checksum):
+    def get_old_hashes(self, hash, user_id, user_path):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute(
             """
             SELECT id FROM hasher_scanned_files
-            WHERE checksum <> %s AND asset_path = %s
+            WHERE checksum <> %s AND asset_path = %s AND user_id = %s
             """,
-            (checksum, path),
+            (hash, user_path, user_id),
         )
         r = []
         for asset in cursor:
@@ -37,16 +37,16 @@ class ImmichDatabase:
         cursor.close()
         self.conn.commit()
 
-    def set_asset_checksum(self, path, checksum):
+    def set_asset_checksum(self, hash, user_id, user_path):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         try:
             cursor.execute(
                 """
-                INSERT INTO hasher_scanned_files(asset_path,checksum,changed_on)
-                VALUES(%s, %s, NOW());
+                INSERT INTO hasher_scanned_files(user_id, asset_path, checksum, changed_on)
+                VALUES(%s, %s, %s, NOW());
                 """,
-                (path, checksum),
+                (user_id, user_path, hash),
             )
         except psycopg2.errors.UniqueViolation:
             pass
@@ -60,6 +60,7 @@ class ImmichDatabase:
             """
             CREATE TABLE IF NOT EXISTS hasher_scanned_files (
                 id INT GENERATED ALWAYS AS IDENTITY,
+                user_id VARCHAR(255) NOT NULL,
                 asset_path TEXT NOT NULL,
                 checksum BYTEA,
                 changed_on TIMESTAMP(6) NOT NULL,
