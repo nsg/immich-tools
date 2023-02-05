@@ -36,6 +36,7 @@ class ImmichDatabase:
             r.append(
                 {
                     "id": asset["id"],
+                    "user_id": asset["user_id"],
                     "path": asset["asset_path"],
                     "changed": asset["changed_on"],
                 }
@@ -67,7 +68,7 @@ class ImmichDatabase:
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute(
             """
-            SELECT asset_id, checksum, changed_on
+            SELECT asset_id, user_id, checksum, changed_on
                 FROM assets_delete_audits
                 WHERE changed_on > (NOW() - interval '2 minutes')
             """
@@ -76,6 +77,7 @@ class ImmichDatabase:
         for deleted in cursor:
             row = {
                 "id": deleted["asset_id"],
+                "user_id": deleted["user_id"],
                 "checksum": bytes(deleted["checksum"]).hex(),
                 "changed": deleted["changed_on"],
             }

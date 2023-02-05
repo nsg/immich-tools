@@ -45,6 +45,7 @@ class Settings:
 
     immich_tools_api: str
     immich_import_api: str
+    immich_jumble_api: str
 
     program_start_ts: float
 
@@ -66,6 +67,9 @@ class Settings:
 
     def immich_import(self, immich_import_api):
         self.immich_import_api = immich_import_api
+
+    def immich_jumble(self, immich_jumble_api):
+        self.immich_jumble_api = immich_jumble_api
 
     def __str__(self) -> str:
         return str(

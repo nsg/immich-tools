@@ -31,6 +31,10 @@ settings.immich_import(
     os.getenv("IMMICH_IMPORT_API")
 )
 
+settings.immich_jumble(
+    os.getenv("IMMICH_JUMBLE_API")
+)
+
 harmonize.log("Starting background threads")
 
 queue = HarmonizeQueue()

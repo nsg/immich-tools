@@ -18,7 +18,7 @@ class ToolsApi:
         return r.json()["assets"]
 
     def get_last_deleted_assets(self):
-        r = requests.get(f"{self.immich_tools_api}/asset/deleted/last")
+        r = requests.get(f"{self.immich_tools_api}/asset/deleted_audits")
         return r.json()
 
 
@@ -33,3 +33,16 @@ class ImportApi:
         r = requests.get(f"{self.immich_import_api}/import/{path}")
         if r.status_code != 200:
             print(f"Failed to import {path}", flush=True)
+
+
+class JumbleApi:
+
+    immich_jumble_api: str
+
+    def __init__(self, settings: harmonize.Settings) -> None:
+        self.immich_jumble_api = settings.immich_jumble_api
+
+    def delete_image(self, user_id, hash):
+        r = requests.delete(f"{self.immich_jumble_api}/user/{user_id}/{hash}")
+        if r.status_code != 200:
+            print(f"Failed to delete {hash} as user {user_id}", flush=True)

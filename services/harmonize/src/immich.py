@@ -6,7 +6,7 @@ import requests
 
 import harmonize
 from harmonize import Types
-from toolsapi import ToolsApi, ImportApi
+from toolsapi import ToolsApi, ImportApi, JumbleApi
 
 
 class ImmichAPI:
@@ -55,19 +55,19 @@ class ImmichAPI:
 
 class ImmichThread(threading.Thread):
 
-    __settings: harmonize.Settings
     __queue: harmonize.HarmonizeQueue
     __immich: ImmichAPI
     __tools: ToolsApi
     __import: ImportApi
+    __jumble: JumbleApi
 
     def __init__(self, settings: harmonize.Settings, queue: harmonize.HarmonizeQueue) -> None:
         super().__init__()
-        self.__settings = settings
         self.__queue = queue
         self.__immich = ImmichAPI(settings)
         self.__tools = ToolsApi(settings)
         self.__import = ImportApi(settings)
+        self.__jumble = JumbleApi(settings)
 
     def run(self, *args, **kwargs):
         harmonize.log("Immich thread started")
@@ -102,5 +102,8 @@ class ImmichThread(threading.Thread):
                     harmonize.fail("Error, image now owned by the expected account")
 
                 self.__immich.delete_assets([assets[0]])
+
+            for remove_local in self.__tools.get_last_deleted_assets():
+                self.__jumble.delete_image(remove_local["user_id"], remove_local["checksum"])
 
             time.sleep(5)
