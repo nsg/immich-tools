@@ -70,7 +70,7 @@ class ImmichDatabase:
             """
             SELECT asset_id, user_id, checksum, changed_on
                 FROM assets_delete_audits
-                WHERE changed_on > (NOW() - interval '2 minutes')
+                WHERE changed_on BETWEEN NOW() - INTERVAL '2 MINUTES' AND NOW()
             """
         )
         r = []
