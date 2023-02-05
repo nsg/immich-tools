@@ -6,7 +6,6 @@ import psycopg2.extras
 
 
 class ImmichDatabase:
-
     def __init__(self) -> None:
         database = os.getenv("DB_DATABASE_NAME", "immich")
         host = os.getenv("DB_HOSTNAME", "127.0.0.1")
@@ -15,36 +14,34 @@ class ImmichDatabase:
         port = os.getenv("DB_PORT", 5432)
 
         self.conn = psycopg2.connect(
-            database=database,
-            host=host,
-            user=username,
-            password=password,
-            port=port)
-
+            database=database, host=host, user=username, password=password, port=port
+        )
 
     def list_users(self):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute("SELECT * FROM users")
         r = []
         for user in cursor:
-            r.append(user['id'])
+            r.append(user["id"])
         cursor.close()
         return r
 
-
     def get_externalfile_by_checksum(self, checksum):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cursor.execute("SELECT * FROM hasher_scanned_files WHERE checksum = %s", (checksum,))
+        cursor.execute(
+            "SELECT * FROM hasher_scanned_files WHERE checksum = %s", (checksum,)
+        )
         r = []
         for asset in cursor:
-            r.append({
-                "id": asset['id'],
-                "path": asset['asset_path'],
-                "changed": asset['changed_on'],
-            })
+            r.append(
+                {
+                    "id": asset["id"],
+                    "path": asset["asset_path"],
+                    "changed": asset["changed_on"],
+                }
+            )
         cursor.close()
-        return { "assets": r, "count": len(r) }
-
+        return {"assets": r, "count": len(r)}
 
     def get_asset_checksum(self, checksum, user_id):
         checksum = f"\\x{checksum}"
@@ -64,21 +61,23 @@ class ImmichDatabase:
         for asset in cursor:
             r.append({"asset_id": asset["id"], "user_id": asset["userId"]})
         cursor.close()
-        return { "assets": r, "count": len(r) }
+        return {"assets": r, "count": len(r)}
 
     def list_last_deleted_assets(self):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT asset_id, checksum, changed_on
                 FROM assets_delete_audits
                 WHERE changed_on > (NOW() - interval '2 minutes')
-            """)
+            """
+        )
         r = []
         for deleted in cursor:
             row = {
                 "id": deleted["asset_id"],
-                "checksum": bytes(deleted['checksum']).hex(),
-                "changed": deleted["changed_on"]
+                "checksum": bytes(deleted["checksum"]).hex(),
+                "changed": deleted["changed_on"],
             }
             r.append(row)
         cursor.close()
@@ -87,7 +86,8 @@ class ImmichDatabase:
     def provision_delete_trigger(self):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS assets_delete_audits (
                 id INT GENERATED ALWAYS AS IDENTITY,
                 asset_id UUID NOT NULL,
@@ -95,9 +95,11 @@ class ImmichDatabase:
                 checksum BYTEA,
                 changed_on TIMESTAMP(6) NOT NULL
             );
-        """)
+        """
+        )
 
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE OR REPLACE FUNCTION log_assets_delete_audits()
                 RETURNS TRIGGER
                 LANGUAGE PLPGSQL
@@ -109,14 +111,17 @@ class ImmichDatabase:
                 RETURN OLD;
             END;
             $$
-        """)
+        """
+        )
 
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE OR REPLACE TRIGGER trigger_assets_delete_audits
             BEFORE DELETE ON assets
             FOR EACH ROW
             EXECUTE PROCEDURE log_assets_delete_audits()
-        """)
+        """
+        )
 
         cursor.close()
         self.conn.commit()
