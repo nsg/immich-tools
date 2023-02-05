@@ -42,5 +42,5 @@ immich_thread = ImmichThread(settings, queue)
 immich_thread.start()
 
 while True:
-    harmonize.log(queue.queue)
+    harmonize.log(queue)
     time.sleep(1)

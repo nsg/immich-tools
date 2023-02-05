@@ -1,7 +1,7 @@
 import os
 import textwrap
 from datetime import datetime
-from queue import Queue
+import queue
 
 
 class HarmonizeException(Exception):
@@ -84,24 +84,48 @@ class Settings:
         )
 
 
-class HarmonizeQueue(Queue):
-    def message(self, message_type: int, message: object):
-        self.put(HarmonizeMessage(message_type, message))
+class HarmonizeQueue():
+    """
+    This class is a container that contains several Queue objects,
+    they are dynamically allocated as needed.
+    """
 
+    __queue_d: dict
 
-class HarmonizeMessage:
+    def __init__(self) -> None:
+        self.__queue_d = {}
 
-    message_type: str
-    message_payload: object
+    def __new(self, type_id: int):
+        self.__queue_d[type_id] = queue.Queue()
 
-    def __init__(self, message_type: int, message_payload: object) -> None:
-        self.message_type = message_type
-        self.message_payload = message_payload
+    def put(self, type_id: int, message: object):
+        """ Insert a message to a queue, non-existing queues are created dynamically """
+
+        if type_id not in self.__queue_d:
+            self.__new(type_id)
+
+        self.__queue_d[type_id].put(message)
+
+    def get(self, type_id: int):
+        """ Return and remove an object from a Queue, an non existing queue raises en Empty exception """
+
+        if type_id in self.__queue_d:
+            return self.__queue_d[type_id].get()
+        raise queue.Empty(f"Queue ID {type_id} do not exists")
+
+    def empty(self, type_id: int) -> bool:
+        """ Check if a Queue is empty, non-existing queues are considered empty """
+
+        if type_id in self.__queue_d:
+            return self.__queue_d[type_id].empty()
+        return True
 
     def __str__(self) -> str:
-        return str(
-            {"message_type": self.message_type, "message_payload": self.message_payload}
-        )
+        r = []
+        r.append("HarmonizeQueue: ")
+        for _, q in self.__queue_d.items():
+            r.append(str(q.queue))
+        return " ".join(r)
 
 
 class Types:

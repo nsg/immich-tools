@@ -77,10 +77,10 @@ class SyncthingAPI:
 class SynthingThread(threading.Thread):
 
     settings: harmonize.Settings
-    queue: harmonize.Queue
+    queue: harmonize.HarmonizeQueue
     syncthing: SyncthingAPI
 
-    def __init__(self, settings: harmonize.Settings, queue: harmonize.Queue) -> None:
+    def __init__(self, settings: harmonize.Settings, queue: harmonize.HarmonizeQueue) -> None:
         super().__init__()
         self.settings = settings
         self.queue = queue
@@ -148,14 +148,14 @@ class SynthingThread(threading.Thread):
                 if action == "deleted":
                     harmonize.log("Syncthing: Remote image was deleted")
                     payload = {"hash": hash, "path": file}
-                    self.queue.message(Types.IMMICH_DELETE_IMAGE, payload)
+                    self.queue.put(Types.IMMICH_DELETE_IMAGE, payload)
 
                 elif action == "modified":
                     harmonize.log(
                         "Syncthing: New/changed image detected. Added to upload queue."
                     )
                     payload = {"hash": hash, "path": file}
-                    self.queue.message(Types.IMMICH_NEW_IMAGE, payload)
+                    self.queue.put(Types.IMMICH_NEW_IMAGE, payload)
 
             # Example: image deleted locally
             elif event["type"] == "LocalChangeDetected":

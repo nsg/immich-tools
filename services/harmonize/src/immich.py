@@ -56,12 +56,12 @@ class ImmichAPI:
 class ImmichThread(threading.Thread):
 
     __settings: harmonize.Settings
-    __queue: harmonize.Queue
+    __queue: harmonize.HarmonizeQueue
     __immich: ImmichAPI
     __tools: ToolsApi
     __import: ImportApi
 
-    def __init__(self, settings: harmonize.Settings, queue: harmonize.Queue) -> None:
+    def __init__(self, settings: harmonize.Settings, queue: harmonize.HarmonizeQueue) -> None:
         super().__init__()
         self.__settings = settings
         self.__queue = queue
@@ -73,38 +73,34 @@ class ImmichThread(threading.Thread):
         harmonize.log("Immich thread started")
 
         while True:
-            item = self.__queue.get()
-            if isinstance(item, harmonize.HarmonizeMessage):
-                if item.message_type == Types.IMMICH_NEW_IMAGE:
-                    #file_hash = item.message_payload["hash"]
-                    file_path = item.message_payload["path"]
-                    self.__import.upload_image(file_path)
-                    harmonize.log("Add new image")
-                elif item.message_type == Types.IMMICH_DELETE_IMAGE:
-                    file_hash = item.message_payload["hash"]
-                    assets = self.__tools.get_assets_by_hash(file_hash)
+            if not self.__queue.empty(Types.IMMICH_NEW_IMAGE):
+                item = self.__queue.get(Types.IMMICH_NEW_IMAGE)
+                #file_hash = item["hash"]
+                file_path = item["path"]
+                self.__import.upload_image(file_path)
+                harmonize.log("Add new image")
 
-                    if len(assets) > 1:
-                        harmonize.fail(
-                            f"Got {len(assets)} results for {file_hash}, abort!"
-                        )
+            if not self.__queue.empty(Types.IMMICH_DELETE_IMAGE):
+                item = self.__queue.get(Types.IMMICH_DELETE_IMAGE)
+                file_hash = item["hash"]
+                assets = self.__tools.get_assets_by_hash(file_hash)
 
-                    if len(assets) == 0:
-                        harmonize.log(
-                            f"Found no remote files for hash {file_hash}, nothing will be removed from Immich"
-                        )
+                if len(assets) > 1:
+                    harmonize.fail(
+                        f"Got {len(assets)} results for {file_hash}, abort!"
+                    )
 
-                    immich_image = self.__immich.get_asset_by_id(assets[0])
-                    immich_id = self.__immich.user_info()['id']
+                if len(assets) == 0:
+                    harmonize.log(
+                        f"Found no remote files for hash {file_hash}, nothing will be removed from Immich"
+                    )
 
-                    if immich_image['ownerId'] != immich_id:
-                        harmonize.fail("Error, image now owned by the expected account")
+                immich_image = self.__immich.get_asset_by_id(assets[0])
+                immich_id = self.__immich.user_info()['id']
 
-                    self.__immich.delete_assets([assets[0]])
+                if immich_image['ownerId'] != immich_id:
+                    harmonize.fail("Error, image now owned by the expected account")
 
-                else:
-                    # Not our message, place it back to the queue
-                    self.__queue.put(item)
-            self.__queue.task_done()
+                self.__immich.delete_assets([assets[0]])
 
-            time.sleep(1)
+            time.sleep(5)
