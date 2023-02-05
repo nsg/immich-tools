@@ -1,5 +1,3 @@
-import json
-
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
@@ -28,10 +26,10 @@ def get_users():
     return db.list_users()
 
 @app.get("/asset/checksum/{checksum}")
-def get_asset_checksum(checksum: str):
+def get_asset_checksum(checksum: str, user_id=None):
     if len(checksum) % 2 == 0:
-        return db.get_asset_checksum(checksum)
-    return { "assets": [], "count": 0 }
+        return db.get_asset_checksum(checksum, user_id)
+    return {"assets": [], "count": 0}
 
 @app.get("/local/checksum/{checksum}")
 def get_local_checksum(checksum: str):

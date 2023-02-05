@@ -46,16 +46,25 @@ class ImmichDatabase:
         return { "assets": r, "count": len(r) }
 
 
-    def get_asset_checksum(self, checksum):
+    def get_asset_checksum(self, checksum, user_id):
         checksum = f"\\x{checksum}"
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cursor.execute("SELECT id FROM assets WHERE checksum = %s", (checksum,))
+
+        if user_id:
+            cursor.execute(
+                'SELECT id, "userId" FROM assets WHERE checksum = %s AND "userId" = %s',
+                (checksum, user_id),
+            )
+        else:
+            cursor.execute(
+                'SELECT id, "userId" FROM assets WHERE checksum = %s', (checksum,)
+            )
+
         r = []
         for asset in cursor:
-            r.append(asset['id'])
+            r.append({"asset_id": asset["id"], "user_id": asset["userId"]})
         cursor.close()
         return { "assets": r, "count": len(r) }
-
 
     def list_last_deleted_assets(self):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
