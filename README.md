@@ -16,7 +16,7 @@ Unofficial Immich API. There are a lot of data in Immich database, this is a sim
 
 ### [Immich Tools Jumble](docs/jumble.md)
 
-This service provides file system operations to to local folders. At the moment it does two things, "hasher" who is service that hashes files to build a search index and "junk" a REST service to access the data and delete files.
+This service provides file system operations to to local folders. At the moment it does two things, a hasher service who is service that hashes files to build a search index and a REST service to access the data and delete files.
 
 ### [Immich Tools Import](docs/import.md)
 

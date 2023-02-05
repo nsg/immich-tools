@@ -1,6 +1,6 @@
 ## Jumble
 
-This service provides file system operations to to local folders. At the moment it does two things, "hasher" who is service that hashes files to build a search index and "junk" a REST service to access the data and delete files.
+This service provides file system operations to to local folders. At the moment it does two things, a hasher service who is service that hashes files to build a search index and a REST service to access the data and delete files.
 
 ### Hasher
 
@@ -8,7 +8,7 @@ This service will build a lookup table for `(user_id, sha1hash)` pairs. Immich T
 
 If an image is deleted in Immich Web the deleted images hash is saved so Harmonize can clean it up from the associated syncthing folder as well to keep the state synchronized. It would be slow to search the filesystem for a specific file by hash value each time, this service solves this by indexing and caches the hash in the database.
 
-### Junk
+### REST API
 
 This provides an REST API with a few local file based operations.
 
