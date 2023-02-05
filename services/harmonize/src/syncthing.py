@@ -105,7 +105,7 @@ class SynthingThread(threading.Thread):
                 self.tick(event)
             last_seen_id = event.get("id")
 
-            time.time(10)
+            time.sleep(10)
 
     def tick(self, event):
 
