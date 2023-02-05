@@ -22,10 +22,6 @@ This service provides file system operations to to local folders. At the moment 
 
 A simple REST API that wraps around Immich CLI. This was an quick and dirty solution to implement file uploads.
 
-### [Immich Tools Syncthing](docs/syncthing.md)
-
-This is the main application that uses all the other components. This listens for events from Syncthing and Immich and uses the different tools to do it's thing.
-
 ## Why it started?
 
 Immich has a lot of potential and is (for me) the best solution in 2023. For me the the killer feature is a great mobile application with local cache of remote files, overall it's fast to use with a really great mobile experience.
