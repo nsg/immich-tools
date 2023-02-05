@@ -120,6 +120,13 @@ class HarmonizeQueue():
             return self.__queue_d[type_id].empty()
         return True
 
+    def all_empty(self) -> bool:
+        """ Check all queues if all of them are empty """
+        for _, q in self.__queue_d.items():
+            if not q.empty():
+                return False
+        return True
+
     def __str__(self) -> str:
         r = []
         r.append("HarmonizeQueue: ")
