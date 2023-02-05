@@ -97,13 +97,14 @@ class ImmichThread(threading.Thread):
                         f"Found no remote files for hash {file_hash}, nothing will be removed from Immich"
                     )
 
-                immich_image = self.__immich.get_asset_by_id(assets[0])
+                asset_id = assets[0]["asset_id"]
+                immich_image = self.__immich.get_asset_by_id(asset_id)
                 immich_id = self.__immich.user_info()['id']
 
                 if immich_image['ownerId'] != immich_id:
                     harmonize.fail("Error, image now owned by the expected account")
 
-                self.__immich.delete_assets([assets[0]])
+                self.__immich.delete_assets([asset_id])
 
             for remove_local in self.__tools.get_last_deleted_assets():
                 self.__jumble.delete_image(remove_local["user_id"], remove_local["checksum"])
