@@ -82,6 +82,7 @@ class ImmichDatabase:
             CREATE TABLE IF NOT EXISTS assets_delete_audits (
                 id INT GENERATED ALWAYS AS IDENTITY,
                 asset_id UUID NOT NULL,
+                user_id VARCHAR(256) NULL,
                 checksum BYTEA,
                 changed_on TIMESTAMP(6) NOT NULL
             );
@@ -94,8 +95,8 @@ class ImmichDatabase:
                 AS
             $$
             BEGIN
-                INSERT INTO assets_delete_audits(asset_id,checksum,changed_on)
-                VALUES(OLD.id, OLD.checksum, NOW());
+                INSERT INTO assets_delete_audits(asset_id, user_id, checksum, changed_on)
+                VALUES(OLD.id, OLD."userId", OLD.checksum, NOW());
                 RETURN OLD;
             END;
             $$
