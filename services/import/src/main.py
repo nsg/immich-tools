@@ -14,19 +14,19 @@ app = FastAPI(
 )
 
 IMMICH_SERVER_URL = os.getenv("IMMICH_SERVER_URL")
-IMMICH_KEY = os.getenv("IMMICH_KEY")
 
 @app.get("/", include_in_schema=False)
 def redirect_to_docs():
     response = RedirectResponse(url='/docs')
     return response
 
-@app.get("/import/{path}")
-def import_path(path: str):
-    base_path = "/import"
-    path_import = f"/import/{path}"
-    filename = pathlib.Path(path_import).name
+@app.get("/import/{user_id}/{path}")
+def import_path(user_id: str, path: str, immich_key: str):
+    base_path = f"/user/{user_id}"
     link_import_path = f"{base_path}/.link-import"
+    path_import = f"{base_path}/{path}"
+
+    filename = pathlib.Path(path_import).name
     temp_link_name = f"{link_import_path}/{filename}"
 
     if not os.path.exists(link_import_path):
@@ -38,7 +38,7 @@ def import_path(path: str):
         "/usr/local/bin/immich",
         "upload",
         "--yes",
-        "--key", IMMICH_KEY,
+        "--key", immich_key,
         "--server", f"{IMMICH_SERVER_URL}",
         "-d", link_import_path
     ]
