@@ -25,12 +25,14 @@ class ToolsApi:
 class ImportApi:
 
     immich_import_api: str
+    immich_api_key: str
 
     def __init__(self, settings: harmonize.Settings) -> None:
         self.immich_import_api = settings.immich_import_api
+        self.immich_api_key = settings.immich_apikey
 
-    def upload_image(self, path):
-        r = requests.get(f"{self.immich_import_api}/import/{path}")
+    def upload_image(self, user_id, path):
+        r = requests.get(f"{self.immich_import_api}/import/{user_id}/{path}?immich_key={self.immich_api_key}")
         if r.status_code != 200:
             print(f"Failed to import {path}", flush=True)
 

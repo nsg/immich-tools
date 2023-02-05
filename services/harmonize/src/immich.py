@@ -61,6 +61,8 @@ class ImmichThread(threading.Thread):
     __import: ImportApi
     __jumble: JumbleApi
 
+    __user_id: str
+
     def __init__(self, settings: harmonize.Settings, queue: harmonize.HarmonizeQueue) -> None:
         super().__init__()
         self.__queue = queue
@@ -68,6 +70,7 @@ class ImmichThread(threading.Thread):
         self.__tools = ToolsApi(settings)
         self.__import = ImportApi(settings)
         self.__jumble = JumbleApi(settings)
+        self.__user_id = self.__immich.user_info()["id"]
 
     def run(self, *args, **kwargs):
         harmonize.log("Immich thread started")
@@ -75,9 +78,8 @@ class ImmichThread(threading.Thread):
         while True:
             if not self.__queue.empty(Types.IMMICH_NEW_IMAGE):
                 item = self.__queue.get(Types.IMMICH_NEW_IMAGE)
-                #file_hash = item["hash"]
                 file_path = item["path"]
-                self.__import.upload_image(file_path)
+                self.__import.upload_image(self.__user_id, file_path)
                 harmonize.log("Add new image")
 
             if not self.__queue.empty(Types.IMMICH_DELETE_IMAGE):
