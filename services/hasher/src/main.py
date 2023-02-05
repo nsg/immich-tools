@@ -25,23 +25,28 @@ else:
 db = ImmichDatabase(DATABASE, HOST, USERNAME, PASSWORD, PORT)
 db.provision_database()
 
+
 def hash_file(path):
     file_hash = hashlib.sha1()
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         fb = f.read(2048)
         while len(fb) > 0:
             file_hash.update(fb)
             fb = f.read(2048)
     return file_hash.hexdigest()
 
+
 while True:
     if os.path.isfile(f"{SCAN_PATH}/.scan-all"):
         now = 0.0
-        print(f".scan-all file found in {SCAN_PATH}, timestamp constraint will be ignored", flush=True)
+        print(
+            f".scan-all file found in {SCAN_PATH}, timestamp constraint will be ignored",
+            flush=True,
+        )
     else:
         now = time.time()
 
-    files = glob.glob(SCAN_PATH + '/**/*', recursive=True)
+    files = glob.glob(SCAN_PATH + "/**/*", recursive=True)
     for file in files:
         if os.path.isfile(file):
             mtime = os.path.getmtime(file)
@@ -52,6 +57,5 @@ while True:
                 clean_up = db.get_old_hashes(file, hash)
                 for id in clean_up:
                     db.delete_asset_by_id(id)
-
 
     time.sleep(SCAN_INTERVAL)
