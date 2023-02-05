@@ -105,6 +105,8 @@ class SynthingThread(threading.Thread):
                 self.tick(event)
             last_seen_id = event.get("id")
 
+            time.time(10)
+
     def tick(self, event):
 
         # Only listen on events from SYNCTHING_FOLDER_ID

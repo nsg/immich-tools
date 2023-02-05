@@ -106,4 +106,4 @@ class ImmichThread(threading.Thread):
             for remove_local in self.__tools.get_last_deleted_assets():
                 self.__jumble.delete_image(remove_local["user_id"], remove_local["checksum"])
 
-            time.sleep(5)
+            time.sleep(10)

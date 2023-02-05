@@ -48,4 +48,4 @@ immich_thread.start()
 while True:
     if not queue.all_empty():
         harmonize.log(queue)
-    time.sleep(1)
+    time.sleep(2)
