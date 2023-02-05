@@ -1,17 +1,17 @@
 ---
 
-name: Create and publish a Docker image for services/hasher
+name: Create and publish a Docker image for services/jumble
 
 on:
   push:
     branches: ['master']
     paths:
-      - "services/hasher/**"
+      - "services/jumble/**"
 
 env:
-  SERVICE_NAME: hasher
+  SERVICE_NAME: jumble
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-services-hasher
+  IMAGE_NAME: ${{ github.repository }}-services-jumble
 
 jobs:
   build-and-push-image:

@@ -6,12 +6,12 @@ api: api-build postgres
 		--env-file .env-file \
 		${IMAGE_PREFIX}-api
 
-hasher: hasher-build postgres camera
+jumble: jumble-build postgres camera
 	podman run \
 		--net host \
 		--env-file .env-file \
 		-v ${PWD}/camera:/user/bcdf8310-430f-48de-a4d2-0d2a1868e901 \
-		${IMAGE_PREFIX}-hasher
+		${IMAGE_PREFIX}-jumble
 
 syncthing: syncthing-build camera
 	podman run \

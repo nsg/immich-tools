@@ -6,4 +6,4 @@ RUN pip install -r /app/requirements.txt
 ADD src/ /app/
 
 WORKDIR /app/
-CMD ["python", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]

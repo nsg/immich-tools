@@ -54,6 +54,24 @@ class ImmichDatabase:
         cursor.close()
         self.conn.commit()
 
+    def local_file(self, hash, user_id):
+        cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute(
+            "SELECT * FROM hasher_scanned_files WHERE checksum = %s AND user_id = %s",
+            (hash, user_id)
+        )
+        r = []
+        for asset in cursor:
+            r.append(
+                {
+                    "id": asset["id"],
+                    "path": asset["asset_path"],
+                    "changed": asset["changed_on"],
+                }
+            )
+        cursor.close()
+        return {"assets": r, "count": len(r)}
+
     def provision_database(self):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute(

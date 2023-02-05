@@ -1,4 +1,8 @@
-### Syncthing
+### Harmonize
+
+This harmonize (sync) a Synthing server with an Immich user. This is the core component that provides synchronization between these two services.
+
+### Requirements
 
 This connects to a Syncthing server and listens for file changes in a specified folder. This service also require read only access to the files to it can enhance the events with file hashes.
 
@@ -24,3 +28,8 @@ This connects to a Syncthing server and listens for file changes in a specified 
 ```
 
 You need to have File Versioning turned on, set it to `Trash Can File Versioning`. To save some disk space, I recommend that you change `Clean out after` to a few days. This script assumes we use `.stversions`.
+
+
+    volumes:
+      - /mnt/user_a:/user/5cd45f80-8b6c-4a01-9a81-72a89082e744
+      - /mnt/user_b:/user/238776bb-5b0c-4fe4-98b1-cea72be79a28
