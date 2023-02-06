@@ -48,4 +48,11 @@ immich_thread.start()
 while True:
     if not queue.all_empty():
         harmonize.log(queue)
+
+    if not syncthing_thread.is_alive():
+        harmonize.log("Syncthing thread is dead")
+
+    if not immich_thread.is_alive():
+        harmonize.log("Immich thread is dead")
+
     time.sleep(2)
