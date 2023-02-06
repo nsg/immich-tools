@@ -7,3 +7,5 @@ ADD src/ /app/
 
 WORKDIR /app/
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--reload"]
+
+HEALTHCHECK CMD curl --fail http://localhost:8000/health || exit 1
