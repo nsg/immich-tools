@@ -16,6 +16,7 @@ class ImmichDatabase:
         self.conn = psycopg2.connect(
             database=database, host=host, user=username, password=password, port=port
         )
+        self.conn.autocommit = True
 
     def list_users(self):
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
