@@ -13,11 +13,10 @@ jumble: jumble-build postgres camera
 		-v ${PWD}/camera:/user/bcdf8310-430f-48de-a4d2-0d2a1868e901 \
 		${IMAGE_PREFIX}-jumble
 
-syncthing: syncthing-build camera
-	podman run \
+syncthing: syncthing-build postgres
+	podman run -ti \
 		--net host \
 		--env-file .env-file \
-		-v ${PWD}/camera:/sync \
 		${IMAGE_PREFIX}-syncthing
 
 import: import-build camera

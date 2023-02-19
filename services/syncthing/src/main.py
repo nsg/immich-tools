@@ -1,156 +1,154 @@
 import time
 import os
-import sys
-from datetime import datetime
-import hashlib
+import string
+import random
+import threading
+import re
 
-from syncthing import SyncthingAPI
-from immich import ImmichAPI
-from toolsapi import ToolsApi, ImportApi
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse, JSONResponse
 
-# Specified in docker-compose.yml
-IMMICH_EMAIL = os.getenv("IMMICH_EMAIL")
-IMMICH_PASSWORD = os.getenv("IMMICH_PASSWORD")
-SYNCTHING_REST_URL = os.getenv("SYNCTHING_REST_URL")
-SYNCTHING_API_KEY = os.getenv("SYNCTHING_API_KEY")
-SYNCTHING_LOCAL_DIR = os.getenv("SYNCTHING_LOCAL_DIR")
-SYNCTHING_FOLDER_ID = os.getenv("SYNCTHING_FOLDER_ID")
-IMMICH_TOOLS_API = os.getenv("IMMICH_TOOLS_API")
-IMMICH_IMPORT_API = os.getenv("IMMICH_IMPORT_API")
+from syncthing.api import SyncthingAPI
+from syncthing.config import SyncthingConfig
 
-# Read from .env
-IMMICH_SERVER_URL = os.getenv("IMMICH_SERVER_URL")
+from database import ImmichDatabase
 
-def parse_nanodate(s):
-    s = s.split(".")[0]
-    return datetime.strptime(f"{s}", "%Y-%m-%dT%H:%M:%S")
+SYNCTHING_CONFIG_PATH = "/var/syncthing/config/config.xml"
+SYNCTHING_REST_API_URI = "http://127.0.0.1:8384/rest"
 
-sy = SyncthingAPI(SYNCTHING_REST_URL, SYNCTHING_API_KEY)
-sy_folders = [ x['id'] for x in sy.fetch_config()['folders'] ]
-
-if SYNCTHING_FOLDER_ID in sy_folders:
-    print(f"SYNCTHING: Found local folder folder {SYNCTHING_LOCAL_DIR}", flush=True)
-else:
-    print(f"SYNCTHING: Local directory {SYNCTHING_FOLDER_ID} not found in {sy_folders}", flush=True)
-    sys.exit(1)
-
-if os.path.exists(SYNCTHING_LOCAL_DIR):
-    print(f"SYNCTHING: Local path to files {SYNCTHING_LOCAL_DIR}", flush=True)
-else:
-    print(f"SYNCTHING: Local path {SYNCTHING_LOCAL_DIR} not found", flush=True)
-    sys.exit(1)
-
-im = ImmichAPI(f"{IMMICH_SERVER_URL}")
-im.login(IMMICH_EMAIL, IMMICH_PASSWORD)
-user_info = im.get_my_user_info()
-print(f"IMMICH:    Logged in as {user_info['email']}", flush=True)
-
-print("SYNCTHING: Listen for events from Syncthing", flush=True)
-
-to = ToolsApi(IMMICH_TOOLS_API)
-ip = ImportApi(IMMICH_IMPORT_API)
-
-def hash_file(path):
-    file_hash = hashlib.sha1()
-    with open(path, 'rb') as f:
-        fb = f.read(2048)
-        while len(fb) > 0:
-            file_hash.update(fb)
-            fb = f.read(2048)
-    return file_hash.hexdigest()
+sc = SyncthingConfig(SYNCTHING_CONFIG_PATH)
+SYNCTHING_REST_API_KEY = sc.apikey()
 
 
-def tick(event):
+def random_string(size=6, chars=string.ascii_uppercase + string.digits):
+    return "".join(random.choice(chars) for _ in range(size))
 
-    # Only listen on events from SYNCTHING_FOLDER_ID
-    if event['data']['folder'] == SYNCTHING_FOLDER_ID:
 
-        event_ts = parse_nanodate(event['time']).timestamp()
-        action = event['data']['action']
-        modby = event['data']['modifiedBy']
-        file = event['data']['path']
+class PendingDevices(threading.Thread):
+    def __init__(self, rest_uri: str, api_key: str) -> None:
+        super().__init__()
+        self.api = SyncthingAPI(rest_uri, api_key)
 
-        # Only process events in the future
-        if event_ts < program_start_ts:
-            return
+    def run(self, *args, **kwargs):
+        print("Start Pending Devices Service", flush=True)
 
-        # Ignore non-files (like directories)
-        if event['data']['type'] != "file":
-            return
+        while True:
+            pending_devices = self.api.get_pending_devices()
+            for pending_device_id in pending_devices:
+                pending_device_name = pending_devices[pending_device_id]["name"]
+                self.api.add_device(pending_device_id, pending_device_name)
+                self.api.save_config()
 
-        # Ignore hidden images (for example trashed files)
-        if file[0] == ".":
-            return
+            time.sleep(2)
 
-        # Example: image created and/or deleted on the phone
-        if event['type'] == "RemoteChangeDetected":
 
-            # Set path to the local files
-            if action == "deleted":
-                local_path = f"{SYNCTHING_LOCAL_DIR}/.stversions/{file}"
-            else:
-                local_path = f"{SYNCTHING_LOCAL_DIR}/{file}"
+class PendingFolders(threading.Thread):
+    def __init__(self, rest_uri: str, api_key: str) -> None:
+        super().__init__()
+        self.api = SyncthingAPI(rest_uri, api_key)
 
-            # Abort if the file do not exist
-            if not os.path.exists(local_path):
-                print("file not exists", local_path, flush=True)
-                return
+    def run(self, *args, **kwargs):
+        print("Start Pending Folders Service", flush=True)
 
-            hash = hash_file(local_path)
-            assets = to.get_assets_by_hash(hash)
+        while True:
+            pending_folders = self.api.get_pending_folders()
+            for folder_id in pending_folders:
+                for folder_owner in pending_folders[folder_id]["offeredBy"]:
+                    self.api.fetch_config()
+                    if folder_id not in self.api.folders():
+                        self.api.add_folder(folder_id, folder_owner)
+                        self.api.save_config()
+            time.sleep(2)
 
-            if action == "deleted":
 
-                # This should not happen, abort if we got several matches
-                if len(assets) > 1:
-                    print(f"Got {len(assets)} results for {hash}, abort!", flush=True)
-                    return
+class FileHasher(threading.Thread):
+    def __init__(self) -> None:
+        super().__init__()
+        self.db = ImmichDatabase()
 
-                # Image not found in Immich, maybe it was never there? Or
-                # maybe it was removed from Immich mobile app? There is
-                # nothing to remove.
-                if len(assets) == 0:
-                    print(f"Found no remote files for hash {hash}, nothing will be removed from Immich", flush=True)
-                    return
+    def run(self, *args, **kwargs):
+        print("Start File Hasher Service", flush=True)
 
-                immich_image = im.get_asset_by_id(assets[0])
+        while True:
+            time.sleep(2)
 
-                # Make sure that this is an image that we owns
-                if immich_image['ownerId'] != im.get_my_user_info()['id']:
-                    print("Error, image now owned by expected person", flush=True)
-                    return
 
-                im.delete_assets([assets[0]])
+db = ImmichDatabase()
 
-            elif action == "modified":
-                ip.upload_image(file)
+time.sleep(3)
+api = SyncthingAPI(SYNCTHING_REST_API_URI, SYNCTHING_REST_API_KEY)
+api.set_userpass(
+    os.getenv("SYNCTHING_USERNAME", random_string()),
+    os.getenv("SYNCTHING_PASSWORD", random_string()),
+)
+api.deny_statistics()
+api.remove_folder("default")
+api.save_config()
 
-        # Example: image deleted locally
-        elif event['type'] == "LocalChangeDetected":
-            print("local file change: not implemented", flush=True)
+time.sleep(2)
 
-def process_assets_delete_audits():
-    remove_locals = to.get_last_deleted_assets()
-    for remove_local in remove_locals:
-        remove_file = to.get_local_by_hash(remove_local["checksum"])
-        remove_path = remove_file["path"]
-        if os.path.exists(remove_file):
-            print(f"File removed from Immich Server, remote {remove_file}")
-            os.remove(remove_file)
-        else:
-            print(f"File removed from Immich Server, file {remove_file} do not exists")
+pending_devices = PendingDevices(SYNCTHING_REST_API_URI, sc.apikey())
+pending_devices.start()
 
-program_start_ts = datetime.utcnow().timestamp()
-last_seen_id = None
-while True:
-    sec = datetime.now().second
+pending_folders = PendingFolders(SYNCTHING_REST_API_URI, sc.apikey())
+pending_folders.start()
 
-    if sec % 10 == 0:
-        for event in sy.get_events_disk(since=last_seen_id):
-            tick(event)
-        last_seen_id = event.get("id")
+file_hasher = FileHasher()
+file_hasher.start()
 
-    if sec % 30 == 0:
-        process_assets_delete_audits()
+app = FastAPI(
+   title="Immich Tools Syncthing Service",
+   description="""
+       This API wraps and embedded Synthing server. Use this API to
+       interact with Syncthing.
+   """.strip(),
+   version="0.1.0"
+)
 
-    time.sleep(1)
+@app.get("/", include_in_schema=False)
+def redirect_to_docs():
+   response = RedirectResponse(url='/docs')
+   return response
+
+@app.get("/events/disk/{last_seen_id}")
+def get_events_disk(last_seen_id: str):
+    return api.get_events_disk(since=last_seen_id)
+
+@app.get("/user/{user_id}/{hash}")
+def get_local_user_asset(user_id: str, hash: str):
+    r = db.local_file(hash, user_id)
+    return r
+
+@app.delete("/user/{user_id}/{hash}")
+def delete_local_user_asset(user_id: str, hash: str):
+    r = db.local_file(hash, user_id)
+
+    if not re.match("^[a-z0-9-]+$", user_id):
+        message = {
+            "message": "Malformed user_id"
+        }
+        return JSONResponse(content=message, status_code=401)
+
+    if r['count'] > 1:
+        message = {
+            "message": "We found more than one match, abort!",
+            "response": r
+        }
+        return JSONResponse(content=message, status_code=401)
+    elif r['count'] == 0:
+        message = {
+            "message": "Hash not found in the database"
+        }
+        return JSONResponse(content=message, status_code=404)
+
+    path = f"/user/{user_id}/{r['assets'][0]['path']}"
+
+    if not os.path.exists(path):
+        message = {
+            "message": f"File not found: {path}"
+        }
+        return JSONResponse(content=message, status_code=404)
+
+    os.unlink(path)
+
+    return {"message": f"File {path} removed"}

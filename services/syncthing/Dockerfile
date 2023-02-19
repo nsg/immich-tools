@@ -1,9 +1,12 @@
-FROM docker.io/library/python:3.11
+FROM docker.io/syncthing/syncthing
+
+RUN apk add python3 py3-pip
 
 ADD requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 ADD src/ /app/
 
-WORKDIR /app/
-CMD ["python", "main.py"]
+RUN chmod +x /app/start.sh
+
+ENTRYPOINT ["/app/start.sh"]
